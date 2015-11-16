@@ -36,6 +36,16 @@ def load_overlay(overlay):
         data = markjaml.load('src/{}/overlay/{}.md'.format(lang, overlay))
 
         loaded = data['data']
+        if 'pin' in loaded:
+            real_pins = dict()
+            for str_pin in loaded['pin']:
+                if str(str_pin).startswith('bcm'):
+                    pin_num = pinout.bcm_to_physical(int(str_pin[3:]))
+                else:
+                    pin_num = int(str_pin)
+                real_pins[pin_num] = loaded['pin'][str_pin]
+            del loaded['pin']
+            loaded['pin'] = real_pins
         loaded['long_description'] = data['html']
     except IOError:
         return None
@@ -61,18 +71,15 @@ def load_overlay(overlay):
         uses_5v = False
         uses_3v = False
         uses = 0
-        for pin in loaded['pin']:
-            pin = str(pin)
-            if pin.startswith('bcm'):
-                pin = pinout.bcm_to_physical(pin[3:])
+        for pin_num in loaded['pin']:
 
-            if pin in pinout.pins:
-                actual_pin = pinout.pins[pin]
+            if pin_num in pinout.pins:
+                pin = pinout.pins[pin_num]
 
-                if actual_pin['type'] in ['+3v3', '+5v', 'GND']:
-                    if actual_pin['type'] == '+3v3':
+                if pin['type'] in ['+3v3', '+5v', 'GND']:
+                    if pin['type'] == '+3v3':
                         uses_3v = True
-                    if actual_pin['type'] == '+5v':
+                    if pin['type'] == '+5v':
                         uses_5v = True
                 else:
                     uses += 1
@@ -80,9 +87,9 @@ def load_overlay(overlay):
         if uses > 0:
             details.append(strings['uses_n_gpio_pins'].format(uses))
 
-        if '3' in loaded['pin'] and '5' in loaded['pin']:
-            pin_3 = loaded['pin']['3']
-            pin_5 = loaded['pin']['5']
+        if 3 in loaded['pin'] and 5 in loaded['pin']:
+            pin_3 = loaded['pin'][3]
+            pin_5 = loaded['pin'][5]
             if 'mode' in pin_3 and 'mode' in pin_5:
                 if pin_3['mode'] == 'i2c' and pin_5['mode'] == 'i2c':
                     details.append('* ' + strings['uses_i2c'])
@@ -142,7 +149,7 @@ def render_alternate(handle, name):
 
 
 def render_pin_page(pin_num):
-    pin = pinout.pins[str(pin_num)]
+    pin = pinout.pins[pin_num]
     pin_url = pin['name']
 
     if pin_url == 'Ground':
@@ -214,7 +221,7 @@ def render_pin_page(pin_num):
 
 
 def render_pin(pin_num, selected_url, overlay=None):
-    pin = pinout.pins[str(pin_num)]
+    pin = pinout.pins[pin_num]
 
     pin_type = list([x.strip() for x in pin['type'].lower().split('/')])
     pin_url = pin['name']

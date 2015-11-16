@@ -20,35 +20,35 @@ def render_html(*args, **kwargs):
         html = html.replace('{{' + key + '}}', kwargs[key])
     return html
 
-def bcm_to_physical(pin):
+def bcm_to_physical(pin_num):
     for idx in pins:
         compare_pin = pins[idx]
         if 'scheme' in compare_pin:
             if 'bcm' in compare_pin['scheme']:
-                if compare_pin['scheme']['bcm'] == int(pin):
-                    #print("Mapping BCM{} to {}".format(pin, str(idx)))
-                    return str(idx)
+                if compare_pin['scheme']['bcm'] == pin_num:
+                    #print("Mapping BCM{} to {}".format(pin_num, idx))
+                    return idx
 
-def physical_to_bcm(pin):
-    pin = pins[pin]
+def physical_to_bcm(pin_num):
+    pin = pins[pin_num]
     if 'scheme' in pin:
         if 'bcm' in pin['scheme']:
-            return str(pin['scheme']['bcm'])
+            return pin['scheme']['bcm']
     return None
 
-def physical_to_wiringpi(pin):
-    pin = pins[pin]
+def physical_to_wiringpi(pin_num):
+    pin = pins[pin_num]
     if 'scheme' in pin:
         if 'wiringpi' in pin['scheme']:
-            return str(pin['scheme']['wiringpi'])
+            return pin['scheme']['wiringpi']
     return None
 
-def physical_to(pin, scheme='bcm'):
+def physical_to(pin_num, scheme='bcm'):
     if scheme in ['bcm','wiringpi']:
-        pin = pins[pin]
+        pin = pins[pin_num]
         if 'scheme' in pin:
             if scheme in pin['scheme']:
-                return str(pin['scheme'][scheme])
+                return pin['scheme'][scheme]
     elif scheme == 'physical':
         return pin
     return None
@@ -63,6 +63,13 @@ def load(lang='en'):
         settings = yaml.load(open('src/{}/{}'.format(lang,SETTINGS_FILE)).read())
     else:
         settings = json.load(open('src/{}/{}'.format(lang,SETTINGS_FILE)))
-    pins = db['pins']
+    pins = dict()
+    for str_pin in db['pins'].keys():
+        pin = db['pins'][str_pin]
+        if 'scheme' in pin:
+            for scheme in pin['scheme']:
+                pin['scheme'][scheme] = int(pin['scheme'][scheme])
+        pin_num = int(str_pin)
+        pins[pin_num] = pin
 
 

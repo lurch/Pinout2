@@ -34,7 +34,7 @@ def load_overlay_url(overlay, lang):
 	return overlay, loaded['page_url']
 
 def get_pin_url(pin_num,pinout):
-	pin = pinout.pins[str(pin_num)]
+	pin = pinout.pins[pin_num]
 	pin_url = pin['name']
 
 	if pin_url == 'Ground':
