@@ -43,6 +43,12 @@ def load_overlay(overlay):
 		data = markjaml.load('src/{}/overlay/{}.md'.format(lang,overlay))
 
 		loaded = data['data']
+		if 'pin' in loaded:
+			real_pins = dict()
+			for pin in loaded['pin']:
+				real_pins[str(pin)] = loaded['pin'][pin]
+			del loaded['pin']
+			loaded['pin'] = real_pins
 	except IOError:
 		return None
 

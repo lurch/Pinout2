@@ -37,6 +37,12 @@ def load_overlay(overlay):
 
         loaded = data['data']
         loaded['long_description'] = data['html']
+        if 'pin' in loaded:
+            real_pins = dict()
+            for pin in loaded['pin']:
+                real_pins[str(pin)] = loaded['pin'][pin]
+            del loaded['pin']
+            loaded['pin'] = real_pins
     except IOError:
         return None
 
